@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from instagram_liked_vids import InstagramLikedVideos
 from tiktok_liked_vids import TikTokLikedVideos
+import asyncio
 
 # Update the main block to use share URLs
 if __name__ == "__main__":
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     
     scraper = TikTokLikedVideos()
     scraper.login()
-    liked_videos = scraper.get_liked_media()
+    liked_videos = asyncio.run(scraper.get_liked_media())
 
     # Write video links to a file
     with open('liked_tiktoks.txt', 'w', encoding='utf-8') as f:
