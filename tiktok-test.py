@@ -1,6 +1,8 @@
 import requests
 import json
 
+
+
 class TikTokScraper:
     def __init__(self):
         self.base_url = "https://www.tiktok.com"
@@ -17,23 +19,53 @@ class TikTokScraper:
     def get_user_info(self, username):
         """Get user profile information"""
         url = f"{self.base_url}/@{username}"
-        response = self.session.get(url, headers=self.headers)
+        params = {
+            "WebIdLastTime": "1705376499",
+            "aid": "1988",
+            "app_language": "en",
+            "app_name": "tiktok_web",
+            "browser_language": "en-US",
+            "browser_platform": "Win32",
+            "device_platform": "web_pc",
+            "focus_state": True,
+            "from_page": "user",
+            "history_len": 4,
+            "is_fullscreen": False,
+            "is_page_visible": True,
+            "os": "windows",
+            "region": "US",
+            "screen_height": 1080,
+            "screen_width": 1920,
+        }
         
-        # Extract user data from response
+        response = self.session.get(url, headers=self.headers, params=params)
+        
         if response.status_code == 200:
-            # Parse the HTML to extract user info
-            # This would require analyzing the response structure
-            pass
-            
+            return response.json()
         return None
         
     def get_user_videos(self, username, max_count=30):
         """Get user's video list"""
         url = f"https://www.tiktok.com/api/user/videos"
         params = {
-            "username": username,
+            "WebIdLastTime": "1705376499",
+            "aid": "1988",
+            "app_language": "en",
+            "app_name": "tiktok_web",
+            "browser_language": "en-US",
             "count": max_count,
-            "cursor": 0
+            "cursor": 0,
+            "device_platform": "web_pc",
+            "focus_state": True,
+            "from_page": "user",
+            "history_len": 4,
+            "is_fullscreen": False,
+            "is_page_visible": True,
+            "os": "windows",
+            "region": "US",
+            "screen_height": 1080,
+            "screen_width": 1920,
+            "username": username
         }
         
         response = self.session.get(url, headers=self.headers, params=params)
@@ -42,19 +74,50 @@ class TikTokScraper:
             return response.json()
         return None
 
-    def download_video(self, video_id):
-        """Download a specific video"""
-        url = f"https://www.tiktok.com/api/video/detail/?itemId={video_id}"
-        response = self.session.get(url, headers=self.headers)
+    def get_liked_videos(self, user_id, max_count=30):
+        """Get user's liked videos"""
+        url = f"https://www.tiktok.com/api/favorite/item_list/"
+        params = {
+            "WebIdLastTime": "1705376499",
+            "aid": "1988",
+            "app_language": "en",
+            "app_name": "tiktok_web",
+            "browser_language": "en-US",
+            "count": max_count,
+            "cursor": 0,
+            "device_platform": "web_pc",
+            "focus_state": True,
+            "from_page": "user",
+            "history_len": 4,
+            "is_fullscreen": False,
+            "is_page_visible": True,
+            "os": "windows",
+            "region": "US",
+            "screen_height": 1080,
+            "screen_width": 1920,
+            "user_id": user_id
+        }
+        
+        response = self.session.get(url, headers=self.headers, params=params)
         
         if response.status_code == 200:
-            video_data = response.json()
-            # Extract video URL and download
-            video_url = video_data.get("itemInfo", {}).get("itemStruct", {}).get("video", {}).get("downloadAddr")
-            if video_url:
-                video_response = self.session.get(video_url, headers=self.headers)
-                if video_response.status_code == 200:
-                    return video_response.content
+            data = response.json()
+            videos = []
+            
+            if data.get('itemList'):
+                for item in data['itemList']:
+                    videos.append({
+                        'id': item.get('id'),
+                        'desc': item.get('desc'),
+                        'video_url': item.get('video', {}).get('playAddr'),
+                        'author': item.get('author', {}).get('uniqueId'),
+                        'stats': {
+                            'likes': item.get('stats', {}).get('diggCount'),
+                            'shares': item.get('stats', {}).get('shareCount'),
+                            'comments': item.get('stats', {}).get('commentCount')
+                        }
+                    })
+            return videos
         return None
 
 def main():
@@ -62,17 +125,14 @@ def main():
     
     # Example usage
     username = "example_user"
-    user_info = scraper.get_user_info(username)
-    videos = scraper.get_user_videos(username)
+    user_id = "123456789"  # Replace with actual user ID
     
-    if videos:
-        print(videos)
-        # for video in videos:
-        #     video_id = video.get("id")
-        #     video_data = scraper.download_video(video_id)
-        #     if video_data:
-        #         with open(f"video_{video_id}.mp4", "wb") as f:
-        #             f.write(video_data)
+    # Get liked videos
+    liked_videos = scraper.get_liked_videos(user_id)
+    if liked_videos:
+        print(json.dumps(liked_videos, indent=2))
+    else:
+        print("Failed to fetch liked videos")
 
 if __name__ == "__main__":
     main()
