@@ -3,7 +3,6 @@ import json
 import os
 from dotenv import load_dotenv
 from instagram_liked_vids import InstagramLikedVideos
-from tiktok_liked_vids import TikTokLikedVideos
 import asyncio
 
 # Update the main block to use share URLs
