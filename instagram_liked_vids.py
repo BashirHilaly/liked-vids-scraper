@@ -1,8 +1,12 @@
 class InstagramLikedVideos:
-    def __init__(self):
-        load_dotenv()
-        self.username = os.getenv('INSTAGRAM_USERNAME')
-        self.password = os.getenv('INSTAGRAM_PASSWORD')
+    def __init__(self, username=None, password=None):
+        if username is None or password is None:
+            load_dotenv()
+            self.username = os.getenv('INSTAGRAM_USERNAME')
+            self.password = os.getenv('INSTAGRAM_PASSWORD')
+        else:
+            self.username = username
+            self.password = password
         self.api = None
         
     def login(self):
